@@ -1,10 +1,7 @@
 package com.RulesTV.RulesTV.rest.controllers;
-import com.RulesTV.RulesTV.entity.Account;
 import com.RulesTV.RulesTV.entity.Genre;
 import com.RulesTV.RulesTV.repositories.GenreRepository;
-import com.RulesTV.RulesTV.rest.DTO.AccountDTO;
 import com.RulesTV.RulesTV.rest.DTO.GenreDTO;
-import com.RulesTV.RulesTV.rest.DTO.RoleDTO;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;

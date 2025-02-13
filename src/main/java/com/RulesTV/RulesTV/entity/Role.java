@@ -18,9 +18,6 @@ public class Role {
     private TypeRole typeRole;
 
     @OneToMany(mappedBy = "role")
-    private Set<Account> accountsList;
-
-    @OneToMany(mappedBy = "role")
     private Set<PermissionRole> permissionsRoleList;
 
     public enum TypeRole {
@@ -50,14 +47,6 @@ public class Role {
 
     public void setTypeRole(TypeRole typeRole) {
         this.typeRole = typeRole;
-    }
-
-    public Set<Account> getAccountsList() {
-        return accountsList;
-    }
-
-    public void setAccountsList(Set<Account> accountsList) {
-        this.accountsList = accountsList;
     }
 
     public Set<PermissionRole> getPermissionsRoleList() {

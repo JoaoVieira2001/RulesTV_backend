@@ -35,8 +35,8 @@ public class Profile {
     private boolean isKidsProfile;
 
     @ManyToOne
-    @JoinColumn(name = "account_email", referencedColumnName = "email")
-    private Account account;
+    @JoinColumn(name = "user_email", referencedColumnName = "email")
+    private UserAuth userAuth;
 
     @OneToMany(mappedBy = "profile", cascade = CascadeType.ALL)
     private List<WatchHistory> watchHistoryList;
@@ -116,12 +116,12 @@ public class Profile {
         isKidsProfile = kidsProfile;
     }
 
-    public Account getAccount() {
-        return account;
+    public UserAuth getUserEmail() {
+        return userAuth;
     }
 
-    public void setAccount(Account account) {
-        this.account = account;
+    public void setUserAuth(UserAuth userAuth) {
+        this.userAuth = userAuth;
     }
 
     public void setWatchHistoryList(List<WatchHistory> watchHistoryList){

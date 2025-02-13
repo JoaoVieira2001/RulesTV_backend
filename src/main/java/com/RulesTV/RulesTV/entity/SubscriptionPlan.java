@@ -40,8 +40,8 @@ public class SubscriptionPlan {
     @OneToMany(mappedBy = "subscription_plan", cascade = CascadeType.ALL)
     private List<Payment> paymentsList;
 
-    @OneToMany(mappedBy = "subscription_plan", cascade = CascadeType.ALL)
-    private List<Account> accountsList;
+    @OneToMany(mappedBy = "subscriptionPlan", cascade = CascadeType.ALL)
+    private List<UserAuth> usersList;
 
     public int getId() {
         return id;
@@ -99,11 +99,11 @@ public class SubscriptionPlan {
         this.paymentsList = paymentsList;
     }
 
-    public List<Account> getAccountsList() {
-        return accountsList;
+    public List<UserAuth> getUsersList() {
+        return usersList;
     }
 
-    public void setAccountsList(List<Account> accountsList) {
-        this.accountsList = accountsList;
+    public void setUsersList(List<UserAuth> usersList) {
+        this.usersList = this.usersList;
     }
 }

@@ -1,11 +1,7 @@
 package com.RulesTV.RulesTV.rest.controllers;
-import com.RulesTV.RulesTV.entity.PermissionRole;
 import com.RulesTV.RulesTV.entity.Role;
 import com.RulesTV.RulesTV.repositories.RoleRepository;
-import com.RulesTV.RulesTV.rest.DTO.PaymentDTO;
-import com.RulesTV.RulesTV.rest.DTO.PermissionRoleDTO;
 import com.RulesTV.RulesTV.rest.DTO.RoleDTO;
-import com.RulesTV.RulesTV.rest.DTO.AccountDTO;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -67,7 +63,6 @@ public class RoleController {
                 .map(existingRole -> {
                     existingRole.setName(updatedRole.getName());
                     existingRole.setTypeRole(updatedRole.getTypeRole());
-                    existingRole.setAccountsList(updatedRole.getAccountsList());
                     existingRole.setPermissionsRoleList(updatedRole.getPermissionsRoleList());
                     roleRepository.save(existingRole);
                     return ResponseEntity.ok(existingRole);

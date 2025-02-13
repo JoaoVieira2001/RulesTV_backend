@@ -1,15 +1,10 @@
 package com.RulesTV.RulesTV.rest.DTO;
 
-import com.RulesTV.RulesTV.entity.Account;
-
-import java.util.List;
-
 public class RoleDTO {
 
     private int id;
     private String name;
     private String typeRole;
-    private List<AccountDTO> accountsList;
 
     public RoleDTO(int id, String name, String typeRole) {
         this.id = id;

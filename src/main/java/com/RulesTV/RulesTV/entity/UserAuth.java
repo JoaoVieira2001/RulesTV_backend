@@ -38,6 +38,9 @@ public class UserAuth implements UserDetails {
     @Column(name = "updated_at")
     private Date updatedAt;
 
+    @ManyToOne
+    @JoinColumn(name = "subscription_plan_id", referencedColumnName = "id", nullable = true)
+    private SubscriptionPlan subscriptionPlan;
 
     public String getPassword() {
         return password;

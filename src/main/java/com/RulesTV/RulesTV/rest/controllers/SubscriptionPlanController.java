@@ -1,8 +1,6 @@
 package com.RulesTV.RulesTV.rest.controllers;
-import com.RulesTV.RulesTV.entity.Episode;
 import com.RulesTV.RulesTV.entity.SubscriptionPlan;
 import com.RulesTV.RulesTV.repositories.SubscriptionPlanRepository;
-import com.RulesTV.RulesTV.rest.DTO.EpisodeDTO;
 import com.RulesTV.RulesTV.rest.DTO.SubscriptionPlanDTO;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -79,8 +77,8 @@ public class SubscriptionPlanController {
                     if (updatedSubscriptionPlan.getPaymentsList() != null) {
                         existingSubscriptionPlan.setPaymentsList(updatedSubscriptionPlan.getPaymentsList());
                     }
-                    if (updatedSubscriptionPlan.getAccountsList() != null) {
-                        existingSubscriptionPlan.setAccountsList(updatedSubscriptionPlan.getAccountsList());
+                    if (updatedSubscriptionPlan.getUsersList() != null) {
+                        existingSubscriptionPlan.setUsersList(updatedSubscriptionPlan.getUsersList());
                     }
                     subscriptionPlanRepository.save(existingSubscriptionPlan);
                     return ResponseEntity.ok(existingSubscriptionPlan);

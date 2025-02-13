@@ -36,7 +36,7 @@ public class ProfileController {
                 e.printStackTrace();
             }
 
-            ProfileDTO dto = new ProfileDTO(profile.getName(),profile.getEmail(),userPreferencesJSON,profile.getAge(),profile.getCreatedAt(),profile.getUpdatedAt(),profile.getKidsProfile(),profile.getAccount().getEmail());
+            ProfileDTO dto = new ProfileDTO(profile.getName(),profile.getEmail(),userPreferencesJSON,profile.getAge(),profile.getCreatedAt(),profile.getUpdatedAt(),profile.getKidsProfile(),profile.getUserEmail().getEmail());
             dto.setName(profile.getName());
             dto.setEmail(profile.getEmail());
             dto.setUser_preferences(userPreferencesJSON);
@@ -44,7 +44,7 @@ public class ProfileController {
             dto.setCreated_at(profile.getCreatedAt());
             dto.setUpdate_at(profile.getUpdatedAt());
             dto.setIs_kids_profile(profile.getKidsProfile());
-            dto.setAccount_email(profile.getAccount().getEmail());
+            dto.setAccount_email(profile.getUserEmail().getEmail());
             return dto;
         }).collect(Collectors.toList());    }
 
@@ -62,7 +62,7 @@ public class ProfileController {
                         e.printStackTrace();
                     }
 
-                    ProfileDTO dto = new ProfileDTO(profile.getName(),profile.getEmail(),userPreferencesJSON,profile.getAge(),profile.getCreatedAt(),profile.getUpdatedAt(),profile.getKidsProfile(),profile.getAccount().getEmail());
+                    ProfileDTO dto = new ProfileDTO(profile.getName(),profile.getEmail(),userPreferencesJSON,profile.getAge(),profile.getCreatedAt(),profile.getUpdatedAt(),profile.getKidsProfile(),profile.getUserEmail().getEmail());
                     dto.setName(profile.getName());
                     dto.setEmail(profile.getEmail());
                     dto.setUser_preferences(userPreferencesJSON);
@@ -70,7 +70,7 @@ public class ProfileController {
                     dto.setCreated_at(profile.getCreatedAt());
                     dto.setUpdate_at(profile.getUpdatedAt());
                     dto.setIs_kids_profile(profile.getKidsProfile());
-                    dto.setAccount_email(profile.getAccount().getEmail());
+                    dto.setAccount_email(profile.getUserEmail().getEmail());
 
                     return ResponseEntity.ok(dto);
                 })
@@ -93,7 +93,7 @@ public class ProfileController {
                     existingProfile.setCreatedAt(updatedProfile.getCreatedAt());
                     existingProfile.setUpdatedAt(updatedProfile.getUpdatedAt());
                     existingProfile.setKidsProfile(updatedProfile.getKidsProfile());
-                    existingProfile.setAccount(updatedProfile.getAccount());
+                    existingProfile.setUserAuth(updatedProfile.getUserEmail());
                     existingProfile.setWatchHistoryList(updatedProfile.getWatchHistoryList());
                     existingProfile.setLibraryList(updatedProfile.getLibraryList());
                     profileRepository.save(existingProfile);

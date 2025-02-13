@@ -1,12 +1,8 @@
 package com.RulesTV.RulesTV.rest.controllers;
-import com.RulesTV.RulesTV.entity.Account;
-import com.RulesTV.RulesTV.entity.CastPeople;
 import com.RulesTV.RulesTV.entity.Movie;
 import com.RulesTV.RulesTV.entity.WatchHistory;
 import com.RulesTV.RulesTV.repositories.MovieRepository;
-import com.RulesTV.RulesTV.rest.DTO.AccountDTO;
 import com.RulesTV.RulesTV.rest.DTO.MovieDTO;
-import com.RulesTV.RulesTV.rest.DTO.RoleDTO;
 import com.RulesTV.RulesTV.rest.DTO.WatchHistoryDTO;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
