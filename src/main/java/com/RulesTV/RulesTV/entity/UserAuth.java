@@ -18,10 +18,10 @@ public class UserAuth implements UserDetails {
     private Integer id;
 
     @Column(nullable = false)
-    private String fullName;
+    private String full_name;
 
     @Column(nullable = false)
-    private String phoneNumber;
+    private String phone_number;
 
     @Column(unique = true, length = 100, nullable = false)
     private String email;
@@ -78,15 +78,15 @@ public class UserAuth implements UserDetails {
         return true;
     }
 
-    public UserAuth(Integer id, String fullName, String phoneNumber,String email,String role ,String password, Date createdAt, Date updatedAt) {
+    public UserAuth(Integer id, String full_name, String phone_number, String email, String role , String password, Date createdAt, Date updatedAt) {
         this.id = id;
-        this.fullName = fullName;
+        this.full_name = full_name;
         this.email = email;
         this.role = role;
         this.password = password;
         this.createdAt = createdAt;
         this.updatedAt = updatedAt;
-        this.phoneNumber = phoneNumber;
+        this.phone_number = phone_number;
     }
 
     public UserAuth(){}
@@ -100,11 +100,11 @@ public class UserAuth implements UserDetails {
     }
 
     public String getFullName() {
-        return fullName;
+        return full_name;
     }
 
-    public void setFullName(String fullName) {
-        this.fullName = fullName;
+    public void setFullName(String full_name) {
+        this.full_name = full_name;
     }
 
     public String getEmail() {
@@ -123,12 +123,12 @@ public class UserAuth implements UserDetails {
         this.role = role;
     }
 
-    public String getPhoneNumber() {
-        return phoneNumber;
+    public String getPhone_number() {
+        return phone_number;
     }
 
-    public void setPhoneNumber(String phoneNumber) {
-        this.phoneNumber = phoneNumber;
+    public void setPhone_number(String phone_number) {
+        this.phone_number = phone_number;
     }
 
     @Override
