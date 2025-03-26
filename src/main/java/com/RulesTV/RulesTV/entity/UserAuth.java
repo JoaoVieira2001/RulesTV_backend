@@ -41,6 +41,10 @@ public class UserAuth implements UserDetails {
     @Column(name = "updated_at")
     private Date updatedAt;
 
+    public enum Role {
+        USER, ADMIN;
+    }
+
     @ManyToOne
     @JoinColumn(name = "subscription_plan_id", referencedColumnName = "id", nullable = true)
     private SubscriptionPlan subscriptionPlan;

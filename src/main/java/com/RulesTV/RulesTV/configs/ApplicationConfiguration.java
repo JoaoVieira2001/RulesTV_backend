@@ -19,27 +19,23 @@ public class ApplicationConfiguration {
     }
 
 
-    //Spring Security interface used to load user-specific data
-    //Finds  a user by email in the userAuthRepository, if not found returns a exception
+
     @Bean
     UserDetailsService userDetailsService() {
         return username -> userRepository.findByEmail(username)
                 .orElseThrow(() -> new UsernameNotFoundException("User not found"));
     }
 
-    //Ensures that passwords are securely hashed before storage and can be matched during login.
     @Bean
     BCryptPasswordEncoder passwordEncoder(){
         return new BCryptPasswordEncoder();
     }
 
-    //This bean is used by Spring Security for managing authentication requests.
     @Bean
     public AuthenticationManager authenticationManager(AuthenticationConfiguration config) throws Exception {
         return config.getAuthenticationManager();
     }
 
-    //Configures how authentication is performed, including user data retrieval and password validation.
     @Bean
     AuthenticationProvider authenticationProvider() {
         DaoAuthenticationProvider authProvider = new DaoAuthenticationProvider();
