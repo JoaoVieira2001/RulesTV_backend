@@ -154,15 +154,21 @@ public class AuthenticationController {
         return ResponseEntity.ok(verificationResult);
     }
 
+    @DeleteMapping("/user/delete/{id}")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<Map<String, String>> deleteUser(@PathVariable Integer id) {
+        boolean deleted = authenticationService.deleteUserById(id);
+
+        if (deleted) {
+            return ResponseEntity.ok(Map.of("message", "User deleted successfully"));
+        } else {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(Map.of("error", "User not found"));
+        }
+    }
 
 
 
 
 
-
-
-
-
-
-}
+    }
 

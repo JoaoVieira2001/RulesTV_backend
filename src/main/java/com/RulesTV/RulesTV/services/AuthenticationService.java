@@ -211,6 +211,17 @@ public class AuthenticationService {
         return response;
     }
 
+    public boolean deleteUserById(Integer id) {
+        Optional<UserAuth> userOptional = userRepository.findById(id);
+
+        if (userOptional.isPresent()) {
+            userRepository.deleteById(id);
+            return true;
+        }
+
+        return false;
+    }
+
     //Store invalidated token
     public void invalidateToken(String token){
         blacklistedTokens.add(token);
