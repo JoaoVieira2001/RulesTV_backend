@@ -43,7 +43,7 @@ public class AuthenticationController {
     public ResponseEntity<LoginResponse> login(@RequestBody Map<String, Object> body) {
         if (!body.containsKey("email") || !body.containsKey("password") || body.size() != 2) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                    .body(new LoginResponse(null, 0, "Request must contain only 'email' and 'password'."));
+                    .body(new LoginResponse(null, 0,null, "Request must contain only 'email' and 'password'."));
         }
 
         String email = (String) body.get("email");
@@ -53,11 +53,24 @@ public class AuthenticationController {
             UserAuth authenticatedUser = authenticationService.authenticate(new LoginUserAuthDTO(email, password));
             String jwtToken = jwtService.generateToken(authenticatedUser);
             long expirationTime = jwtService.getExpirationTime();
-            return ResponseEntity.ok(new LoginResponse(jwtToken, expirationTime, null));
+            return ResponseEntity.ok(new LoginResponse(jwtToken, expirationTime,authenticatedUser.getEmail(), null));
         } catch (Exception ex) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                    .body(new LoginResponse(null, 0, "Invalid username or password."));
+                    .body(new LoginResponse(null, 0,null, "Invalid username or password."));
         }
+    }
+
+    @PostMapping("/logout")
+    public ResponseEntity<Map<String, String>> logout(@RequestHeader("Authorization") String authHeader) {
+        if (authHeader == null || !authHeader.startsWith("Bearer ")) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body(Map.of("error", "Missing or invalid Authorization header"));
+        }
+
+        String token = authHeader.substring(7); //Extract token
+        authenticationService.invalidateToken(token);
+        SecurityContextHolder.clearContext(); // Clear authentication context
+        return ResponseEntity.ok(Map.of("message", "Successfully logged out"));
     }
 
     @GetMapping("/user/all")

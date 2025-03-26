@@ -2,7 +2,6 @@ package com.RulesTV.RulesTV.entity;
 import jakarta.persistence.*;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
-import org.springframework.security.config.core.GrantedAuthorityDefaults;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
@@ -14,18 +13,22 @@ import java.util.List;
 public class UserAuth implements UserDetails {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(nullable = false)
     private Integer id;
 
     @Column(nullable = false)
     private String fullName;
 
+    @Column(nullable = false)
+    private String phoneNumber;
+
     @Column(unique = true, length = 100, nullable = false)
     private String email;
 
     @Column(nullable = false)
     private String password;
+
 
     @Column(nullable = false)
     private String role;
@@ -71,7 +74,7 @@ public class UserAuth implements UserDetails {
         return true;
     }
 
-    public UserAuth(Integer id, String fullName, String email,String role ,String password, Date createdAt, Date updatedAt) {
+    public UserAuth(Integer id, String fullName, String phoneNumber,String email,String role ,String password, Date createdAt, Date updatedAt) {
         this.id = id;
         this.fullName = fullName;
         this.email = email;
@@ -79,6 +82,7 @@ public class UserAuth implements UserDetails {
         this.password = password;
         this.createdAt = createdAt;
         this.updatedAt = updatedAt;
+        this.phoneNumber = phoneNumber;
     }
 
     public UserAuth(){}
@@ -113,6 +117,14 @@ public class UserAuth implements UserDetails {
 
     public void setRole(String role) {
         this.role = role;
+    }
+
+    public String getPhoneNumber() {
+        return phoneNumber;
+    }
+
+    public void setPhoneNumber(String phoneNumber) {
+        this.phoneNumber = phoneNumber;
     }
 
     @Override

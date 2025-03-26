@@ -4,6 +4,7 @@ import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 import io.jsonwebtoken.io.Decoders;
@@ -18,11 +19,16 @@ import java.util.function.Function;
 @Service
 public class JwtService {
 
+    private final AuthenticationService authenticationService;
     @Value("${security.jwt.secret-key}")
     private String secretKey;
 
     @Value("${security.jwt.expiration-time}")
     private long jwtExpiration;
+
+    public JwtService(@Lazy AuthenticationService authenticationService) {
+        this.authenticationService = authenticationService;
+    }
 
     public String extractUsername(String token) {
         return extractClaim(token, Claims::getSubject);
@@ -61,6 +67,10 @@ public class JwtService {
     }
 
     public boolean isTokenValid(String token, UserDetails accountDetails) {
+        if(authenticationService.isTokenBlackListed(token)){
+            return false;
+        }
+
         final String username = extractUsername(token);
         return (username.equals(accountDetails.getUsername())) && !isTokenExpired(token);
     }

@@ -4,19 +4,16 @@ import com.RulesTV.RulesTV.entity.UserAuth;
 import com.RulesTV.RulesTV.repositories.UserRepository;
 import com.RulesTV.RulesTV.rest.DTO.LoginUserAuthDTO;
 import com.RulesTV.RulesTV.rest.DTO.RegisterUserAuthDTO;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.core.userdetails.User;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
 
@@ -27,8 +24,10 @@ public class AuthenticationService {
     private final PasswordEncoder passwordEncoder;
     private final AuthenticationManager authenticationManager;
     private final JwtService jwtService;
+    private final Set<String> blacklistedTokens = new HashSet<>();
 
-    public AuthenticationService(UserRepository userRepository, PasswordEncoder passwordEncoder, AuthenticationManager authenticationManager, JwtService jwtService) {
+
+    public AuthenticationService(UserRepository userRepository, PasswordEncoder passwordEncoder, AuthenticationManager authenticationManager, @Lazy JwtService jwtService) {
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
         this.authenticationManager = authenticationManager;
@@ -44,13 +43,18 @@ public class AuthenticationService {
             throw new IllegalArgumentException("Name is required");
         }
 
+        if (input.getPhone_number() == null || input.getPhone_number().isEmpty()) {
+            throw new IllegalArgumentException("PhoneNumber is required");
+        }
+
         if (input.getPassword() == null || input.getPassword().isEmpty()) {
-            throw new IllegalArgumentException("Email is required");
+            throw new IllegalArgumentException("Password is required");
         }
 
         UserAuth user = new UserAuth();
         user.setFullName(input.getName());
         user.setEmail(input.getEmail());
+        user.setPhoneNumber(input.getPhone_number());
         user.setPassword(passwordEncoder.encode(input.getPassword()));
         user.setRole("USER");
 
@@ -205,6 +209,16 @@ public class AuthenticationService {
         }
 
         return response;
+    }
+
+    //Store invalidated token
+    public void invalidateToken(String token){
+        blacklistedTokens.add(token);
+    }
+
+    //Validates invalidated token
+    public boolean isTokenBlackListed(String token){
+        return blacklistedTokens.contains(token);
     }
 }
 

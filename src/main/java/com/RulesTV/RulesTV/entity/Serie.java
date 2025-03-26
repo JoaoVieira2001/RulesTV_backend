@@ -11,7 +11,7 @@ public class Serie {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int id;
 
-    @Column(nullable = false, length = 255)
+    @Column(nullable = false)
     private String title;
 
     @Column(columnDefinition = "TEXT")
@@ -33,7 +33,7 @@ public class Serie {
     private String trailerUrl;
 
     @Column
-    private Byte poster;
+    private String poster;
 
     @Column(nullable = false)
     private Integer certifications;
@@ -45,7 +45,7 @@ public class Serie {
     public enum Status {
         ON_GOING,
         COMPLETED,
-        NOT_VIEWED;
+        NOT_VIEWED
     }
 
     @OneToMany(mappedBy = "serie", cascade = CascadeType.ALL)
@@ -113,12 +113,11 @@ public class Serie {
         this.numberSeasons = numberSeasons;
     }
 
-
-    public Byte getPoster() {
+    public String getPoster() {
         return poster;
     }
 
-    public void setPoster(Byte poster) {
+    public void setPoster(String poster) {
         this.poster = poster;
     }
 

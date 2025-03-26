@@ -9,13 +9,13 @@ public class SerieDTO {
     private Integer number_seasons;
     private Integer certifications;
     private LocalDateTime release_date;
-    private Byte poster;
+    private String poster;
     private Integer rating;
     private String status;
     private String language;
 
     public SerieDTO(String title, String description, String trailer_url, int number_seasons, int certifications, LocalDateTime release_date,
-                    Integer rating, String status, String language, Byte poster) {
+                    Integer rating, String status, String language, String poster) {
         this.title = title;
         this.description = description;
         this.trailer_url = trailer_url;
@@ -100,11 +100,11 @@ public class SerieDTO {
         this.language = language;
     }
 
-    public Byte getPoster() {
+    public String getPoster() {
         return poster;
     }
 
-    public void setPoster(Byte poster) {
+    public void setPoster(String poster) {
         this.poster = poster;
     }
 }
