@@ -3,13 +3,13 @@ package com.RulesTV.RulesTV.rest.DTO;
 public class RegisterUserAuthDTO {
 
     private String email;
-    private String name;
+    private String fullName;
     private String password;
     private String phone_number;
 
-    public RegisterUserAuthDTO(String email, String name, String password, String phoneNumber) {
+    public RegisterUserAuthDTO(String email, String fullName, String password, String phoneNumber) {
         this.email = email;
-        this.name = name;
+        this.fullName = fullName;
         this.password = password;
         this.phone_number = phoneNumber;
     }
@@ -22,10 +22,10 @@ public class RegisterUserAuthDTO {
         this.email = email;
     }
 
-    public String getName() {return name;}
+    public String getName() {return fullName;}
 
-    public void setName(String name) {
-        this.name = name;
+    public void setName(String fullName) {
+        this.fullName = this.fullName;
     }
 
     public String getPhone_number() {return phone_number;}
