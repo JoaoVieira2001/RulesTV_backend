@@ -76,6 +76,13 @@ public class AuthenticationController {
         return ResponseEntity.ok(Map.of("message", "Successfully logged out"));
     }
 
+    @PutMapping("/user/update/{id}")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<UserAuth> updateUser(@PathVariable Integer id,@RequestBody RegisterUserAuthDTO updateUserDTO){
+        UserAuth updateUser = authenticationService.updateUser(id,updateUserDTO);
+        return ResponseEntity.ok(updateUser);
+    }
+
     @GetMapping("/user/all")
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<List<UserAuth>> getAllUsers(){

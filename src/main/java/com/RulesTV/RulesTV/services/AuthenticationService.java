@@ -106,6 +106,27 @@ public class AuthenticationService {
 
     }
 
+    public UserAuth updateUser(Integer id,RegisterUserAuthDTO updateUserDTO){
+        UserAuth user = userRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("User not found with id: " + id));
+
+        if (updateUserDTO.getName() != null && !updateUserDTO.getName().isEmpty()) {
+            user.setFullName(updateUserDTO.getName());
+        }
+        if (updateUserDTO.getPhone_number() != null && !updateUserDTO.getPhone_number().isEmpty()) {
+            user.setPhone_number(updateUserDTO.getPhone_number());
+        }
+        if (updateUserDTO.getEmail() != null && !updateUserDTO.getEmail().isEmpty()) {
+            user.setEmail(updateUserDTO.getEmail());
+        }
+        if (updateUserDTO.getPassword() != null && !updateUserDTO.getPassword().isEmpty()) {
+            user.setPassword(passwordEncoder.encode(updateUserDTO.getPassword()));
+        }
+
+        return userRepository.save(user);
+
+    }
+
 
     public UserAuth promoteUserToAdmin(String email) {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
