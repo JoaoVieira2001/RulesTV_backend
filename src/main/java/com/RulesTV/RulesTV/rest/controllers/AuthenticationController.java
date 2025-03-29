@@ -43,7 +43,7 @@ public class AuthenticationController {
     public ResponseEntity<LoginResponse> login(@RequestBody Map<String, Object> body) {
         if (!body.containsKey("email") || !body.containsKey("password") || body.size() != 2) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                    .body(new LoginResponse(null,null, 0,null, "Request must contain only 'email' and 'password'.",null));
+                    .body(new LoginResponse(0,null,null, 0,null, "Request must contain only 'email' and 'password'.",null));
         }
 
         String email = (String) body.get("email");
@@ -55,11 +55,12 @@ public class AuthenticationController {
             long expirationTime = jwtService.getExpirationTime();
             String userRole = authenticatedUser.getRole();
             String userName = authenticatedUser.getFullName();
+            Number userId = authenticatedUser.getId();
 
-            return ResponseEntity.ok(new LoginResponse(userName,jwtToken, expirationTime,authenticatedUser.getEmail(), null,userRole));
+            return ResponseEntity.ok(new LoginResponse(userId,userName,jwtToken, expirationTime,authenticatedUser.getEmail(), null,userRole));
         } catch (Exception ex) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                    .body(new LoginResponse(null,null, 0,null, "Invalid username or password.",null));
+                    .body(new LoginResponse(0,null,null, 0,null, "Invalid username or password.",null));
         }
     }
 

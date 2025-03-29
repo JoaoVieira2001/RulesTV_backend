@@ -2,6 +2,7 @@ package com.RulesTV.RulesTV.entity;
 
 public class LoginResponse {
 
+    private Number id;
     private String name;
     private String token;
     private long expiresIn;
@@ -9,13 +10,22 @@ public class LoginResponse {
     private String message;
     private String role;
 
-    public LoginResponse(String name,String token, long expiresIn, String email, String message,String role) {
+    public LoginResponse(Number id,String name,String token, long expiresIn, String email, String message,String role) {
+        this.id = id;
         this.name = name;
         this.token = token;
         this.expiresIn = expiresIn;
         this.email = email;
         this.message = message;
         this.role = role;
+    }
+
+    public Number getId() {
+        return id;
+    }
+
+    public void setId(Number id) {
+        this.id = id;
     }
 
     public String getName() {
