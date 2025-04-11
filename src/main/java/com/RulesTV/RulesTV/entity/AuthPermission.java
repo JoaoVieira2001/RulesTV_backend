@@ -1,10 +1,9 @@
 package com.RulesTV.RulesTV.entity;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
+import jakarta.persistence.*;
 
+@Entity
+@Table(name = "auth_permission")
 public class AuthPermission {
 
     @Id
@@ -26,6 +25,9 @@ public class AuthPermission {
         this.name = name;
         this.codename = codename;
         this.contentTypeId = contentTypeId;
+    }
+
+    public AuthPermission() {
     }
 
     public Integer getId() {
