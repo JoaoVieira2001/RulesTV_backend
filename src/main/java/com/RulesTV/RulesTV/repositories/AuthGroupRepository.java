@@ -7,5 +7,6 @@ import java.util.Optional;
 public interface AuthGroupRepository extends JpaRepository<AuthGroup, Integer> {
     Optional<AuthGroup> findByName(String name);
 
+    Optional<AuthGroup> findById(Integer id);
     boolean existsByName(String name);
 }

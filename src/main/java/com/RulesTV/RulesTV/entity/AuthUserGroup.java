@@ -3,7 +3,10 @@ package com.RulesTV.RulesTV.entity;
 import jakarta.persistence.*;
 
 @Entity
-@Table(name = "auth_user_groups")
+@Table(
+    name = "auth_user_groups",
+    uniqueConstraints = {@UniqueConstraint(columnNames = {"user_id", "group_id"})}
+)
 public class AuthUserGroup {
 
     @Id
@@ -26,6 +29,7 @@ public class AuthUserGroup {
     }
 
     public AuthUserGroup(){}
+
 
     public Integer getId() {
         return id;
@@ -50,4 +54,5 @@ public class AuthUserGroup {
     public void setGroup(AuthGroup group) {
         this.group = group;
     }
+
 }

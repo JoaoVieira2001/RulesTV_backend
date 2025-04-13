@@ -73,13 +73,13 @@ public class AuthGroupService {
 
 
 
-    public void removeUserFromGroup(Integer userId, String groupName){
+    public void removeUserFromGroup(Integer userId, Integer groupId){
        Optional<UserAuth> userOptional = userRepository.findById(userId);
        if (userOptional.isEmpty()) {
            throw new RuntimeException("User not found");
        }
 
-       Optional<AuthGroup> groupOptional = authGroupRepository.findByName(groupName);
+       Optional<AuthGroup> groupOptional = authGroupRepository.findById(groupId);
        if (groupOptional.isEmpty()) {
            throw new RuntimeException("Group not found");
        }
