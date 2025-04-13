@@ -1,6 +1,7 @@
 package com.RulesTV.RulesTV.services;
 
 import com.RulesTV.RulesTV.entity.UserAuth;
+import com.RulesTV.RulesTV.repositories.AuthTokenRepository;
 import com.RulesTV.RulesTV.repositories.UserRepository;
 import com.RulesTV.RulesTV.rest.DTO.LoginUserAuthDTO;
 import com.RulesTV.RulesTV.rest.DTO.RegisterUserAuthDTO;
@@ -23,15 +24,22 @@ public class AuthenticationService {
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
     private final AuthenticationManager authenticationManager;
+    private final AuthTokenRepository authTokenRepository;
     private final JwtService jwtService;
     private final Set<String> blacklistedTokens = new HashSet<>();
 
 
-    public AuthenticationService(UserRepository userRepository, PasswordEncoder passwordEncoder, AuthenticationManager authenticationManager, @Lazy JwtService jwtService) {
+    public AuthenticationService(UserRepository userRepository,
+                                 PasswordEncoder passwordEncoder,
+                                 AuthenticationManager authenticationManager,
+                                 AuthTokenRepository authTokenRepository,
+                                 @Lazy JwtService jwtService) {
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
         this.authenticationManager = authenticationManager;
+        this.authTokenRepository = authTokenRepository;
         this.jwtService = jwtService;
+
     }
 
     public UserAuth signup(RegisterUserAuthDTO input) {
@@ -245,6 +253,7 @@ public class AuthenticationService {
 
     //Store invalidated token
     public void invalidateToken(String token){
+
         blacklistedTokens.add(token);
     }
 

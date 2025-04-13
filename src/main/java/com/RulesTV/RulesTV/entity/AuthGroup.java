@@ -4,7 +4,6 @@ import jakarta.persistence.*;
 import java.util.Set;
 
 @Entity
-@Table(name = "auth_group")
 public class AuthGroup {
 
     @Id

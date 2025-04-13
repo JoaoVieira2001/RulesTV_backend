@@ -1,8 +1,10 @@
 package com.RulesTV.RulesTV.rest.controllers;
+import com.RulesTV.RulesTV.entity.AuthToken;
 import com.RulesTV.RulesTV.entity.LoginResponse;
 import com.RulesTV.RulesTV.entity.UserAuth;
 import com.RulesTV.RulesTV.rest.DTO.LoginUserAuthDTO;
 import com.RulesTV.RulesTV.rest.DTO.RegisterUserAuthDTO;
+import com.RulesTV.RulesTV.services.AuthTokenService;
 import com.RulesTV.RulesTV.services.AuthenticationService;
 import com.RulesTV.RulesTV.services.JwtService;
 import org.slf4j.Logger;
@@ -25,11 +27,13 @@ public class AuthenticationController {
     private final AuthenticationService authenticationService;
     private static final Logger logger = LoggerFactory.getLogger(AuthenticationController.class); // SLF4J Logger
     private final PasswordEncoder passwordEncoder;
+    private final AuthTokenService authTokenService;
 
-    public AuthenticationController(JwtService jwtService, AuthenticationService authenticationService, PasswordEncoder passwordEncoder) {
+    public AuthenticationController(JwtService jwtService, AuthenticationService authenticationService, PasswordEncoder passwordEncoder, AuthTokenService authTokenService) {
         this.jwtService = jwtService;
         this.authenticationService = authenticationService;
         this.passwordEncoder = passwordEncoder;
+        this.authTokenService = authTokenService;
     }
 
     @PostMapping("/signup")
@@ -56,6 +60,9 @@ public class AuthenticationController {
             String userRole = authenticatedUser.getRole();
             String userName = authenticatedUser.getFullName();
             Number userId = authenticatedUser.getId();
+
+            AuthToken authToken = new AuthToken(jwtToken,authenticatedUser);
+            authTokenService.saveToken(authToken);
 
             return ResponseEntity.ok(new LoginResponse(userId,userName,jwtToken, expirationTime,authenticatedUser.getEmail(), null,userRole));
         } catch (Exception ex) {
