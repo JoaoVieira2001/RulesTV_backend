@@ -1,17 +1,31 @@
+// AuthGroupDTO.java
 package com.RulesTV.RulesTV.rest.DTO;
 
 public class AuthGroupDTO {
-    private String groupName;
+    private Integer id;
+    private String name;
 
-    public AuthGroupDTO(String groupName) {
-        this.groupName = groupName;
+    public AuthGroupDTO() {}
+
+    public AuthGroupDTO(Integer id, String name) {
+        this.id = id;
+        this.name = name;
     }
 
-    public String getGroupName() {
-        return groupName;
+    public Integer getId() {
+        return id;
     }
 
-    public void setGroupName(String groupName) {
-        this.groupName = groupName;
+    public void setId(Integer id) {
+        this.id = id;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
     }
 }
+

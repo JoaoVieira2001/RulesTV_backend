@@ -6,12 +6,14 @@ public class RegisterUserAuthDTO {
     private String fullName;
     private String password;
     private String phone_number;
+    private String role;
 
-    public RegisterUserAuthDTO(String email, String fullName, String password, String phoneNumber) {
+    public RegisterUserAuthDTO(String email, String fullName, String password, String phoneNumber,String role) {
         this.email = email;
         this.fullName = fullName;
         this.password = password;
         this.phone_number = phoneNumber;
+        this.role = role;
     }
 
     public String getEmail() {
@@ -40,5 +42,11 @@ public class RegisterUserAuthDTO {
         this.password = password;
     }
 
+    public String getRole() {
+        return role;
+    }
 
+    public void setRole(String role) {
+        this.role = role;
+    }
 }

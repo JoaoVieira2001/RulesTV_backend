@@ -1,10 +1,12 @@
 package com.RulesTV.RulesTV.services;
-
+import com.RulesTV.RulesTV.repositories.*;
+import jakarta.transaction.Transactional;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import com.RulesTV.RulesTV.entity.UserAuth;
-import com.RulesTV.RulesTV.repositories.AuthTokenRepository;
-import com.RulesTV.RulesTV.repositories.UserRepository;
 import com.RulesTV.RulesTV.rest.DTO.LoginUserAuthDTO;
 import com.RulesTV.RulesTV.rest.DTO.RegisterUserAuthDTO;
+import org.springframework.cglib.core.Local;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -14,6 +16,9 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.time.Duration;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
@@ -25,21 +30,29 @@ public class AuthenticationService {
     private final PasswordEncoder passwordEncoder;
     private final AuthenticationManager authenticationManager;
     private final AuthTokenRepository authTokenRepository;
+    private final AuthLogoutRepository authLogoutRepository;
+    private final AuthUserGroupRepository authUserGroupRepository;
     private final JwtService jwtService;
     private final Set<String> blacklistedTokens = new HashSet<>();
+    private static final Logger logger = LoggerFactory.getLogger(AuthenticationService.class);
+    private final AuthLoginRepository authLoginRepository;
 
 
     public AuthenticationService(UserRepository userRepository,
                                  PasswordEncoder passwordEncoder,
                                  AuthenticationManager authenticationManager,
                                  AuthTokenRepository authTokenRepository,
-                                 @Lazy JwtService jwtService) {
+                                 AuthLogoutRepository authLogoutRepository,
+                                 AuthUserGroupRepository authUserGroupRepository,
+                                 @Lazy JwtService jwtService, AuthLoginRepository authLoginRepository) {
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
         this.authenticationManager = authenticationManager;
         this.authTokenRepository = authTokenRepository;
+        this.authLogoutRepository = authLogoutRepository;
+        this.authUserGroupRepository = authUserGroupRepository;
         this.jwtService = jwtService;
-
+        this.authLoginRepository = authLoginRepository;
     }
 
     public UserAuth signup(RegisterUserAuthDTO input) {
@@ -64,7 +77,13 @@ public class AuthenticationService {
         user.setEmail(input.getEmail());
         user.setPhone_number(input.getPhone_number());
         user.setPassword(passwordEncoder.encode(input.getPassword()));
-        user.setRole("USER");
+
+        String role = input.getRole();
+        if ("ADMIN".equalsIgnoreCase(role)) {
+            user.setRole("ADMIN");
+        } else {
+            user.setRole("USER");
+        }
 
         return userRepository.save(user);
     }
@@ -240,16 +259,27 @@ public class AuthenticationService {
         return response;
     }
 
+    @Transactional
     public boolean deleteUserById(Integer id) {
         Optional<UserAuth> userOptional = userRepository.findById(id);
-
-        if (userOptional.isPresent()) {
-            userRepository.deleteById(id);
-            return true;
+        if (userOptional.isEmpty()) {
+            return false;
         }
 
-        return false;
+        UserAuth user = userOptional.get();
+
+        // Delete associated foreign key entries
+        authLogoutRepository.deleteByUser(user);
+        authLoginRepository.deleteByUser(user);
+        authUserGroupRepository.deleteByUser(user);
+        authTokenRepository.deleteByUser(user);
+
+        userRepository.delete(user);
+
+        return true;
     }
+
+
 
     //Store invalidated token
     public void invalidateToken(String token){
@@ -260,6 +290,29 @@ public class AuthenticationService {
     //Validates invalidated token
     public boolean isTokenBlackListed(String token){
         return blacklistedTokens.contains(token);
+    }
+
+
+    public String parseBrowserFromUserAgent(String userAgent){
+        if(userAgent == null) return "Unknown";
+
+        userAgent = userAgent.toLowerCase();
+        logger.info("Parsing User-Agent: {}", userAgent);
+        if (userAgent.contains("edg")) return "Edge";
+        if (userAgent.contains("chrome")) return "Chrome";
+        if (userAgent.contains("firefox")) return "Firefox";
+        if (userAgent.contains("safari")) return "Safari";
+        if (userAgent.contains("msie") || userAgent.contains("trident")) return "Internet Explorer";
+        return "Other";
+    }
+
+    public String calculateSessionDuration(LocalDateTime loginTime, LocalDateTime logoutTime){
+        Duration sessionDuration = Duration.between(loginTime,logoutTime);
+
+        return String.format("%02d:%02d:%02d",
+                sessionDuration.toHours(),
+                sessionDuration.toMinutesPart(),
+                sessionDuration.toSecondsPart());
     }
 }
 

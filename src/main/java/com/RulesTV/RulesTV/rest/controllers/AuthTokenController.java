@@ -3,7 +3,6 @@ import com.RulesTV.RulesTV.entity.AuthToken;
 import com.RulesTV.RulesTV.services.AuthTokenService;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
-
 import java.util.List;
 
 @RestController

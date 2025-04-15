@@ -22,10 +22,15 @@ public class AuthUserGroup {
     @JoinColumn(name = "group_id", referencedColumnName = "id", nullable = false)
     private AuthGroup group;
 
-    public AuthUserGroup(Integer id, UserAuth user, AuthGroup group) {
+    @ManyToOne
+    @JoinColumn(name = "permission_id", referencedColumnName = "id", nullable = false)
+    private AuthPermission permissionId;
+
+    public AuthUserGroup(Integer id, UserAuth user, AuthGroup group,AuthPermission permissionId) {
         this.id = id;
         this.user = user;
         this.group = group;
+        this.permissionId = permissionId;
     }
 
     public AuthUserGroup(){}
@@ -55,4 +60,11 @@ public class AuthUserGroup {
         this.group = group;
     }
 
+    public AuthPermission getPermissionId() {
+        return permissionId;
+    }
+
+    public void setPermissionId(AuthPermission permissionId) {
+        this.permissionId = permissionId;
+    }
 }

@@ -28,8 +28,10 @@ public class AuthGroupController {
     // Get all groups
     @GetMapping("/group/all")
     @PreAuthorize("hasRole('ADMIN')")
-    public List<AuthGroup> listAllGroups() {
-        return authGroupService.getAllGroups();
+    public List<AuthGroupDTO> listAllGroups() {
+        return authGroupService.getAllGroups().stream()
+                .map(group -> new AuthGroupDTO(group.getId(), group.getName()))
+                .toList();
     }
 
     // Get all users of a specific group
@@ -39,13 +41,13 @@ public class AuthGroupController {
         return authGroupService.getUsersInGroup(groupName);
     }
 
-    // Get a group by its name
-    @GetMapping("/group/{groupName}")
+    // Get a group by its id
+    @GetMapping("/group/{groupId}")
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<AuthGroup> getGroupByName(@PathVariable String groupName){
+    public ResponseEntity<AuthGroupDTO> getGroupById(@PathVariable Integer groupId){
         try {
-            AuthGroup group = authGroupService.getGroupByName(groupName);
-            return ResponseEntity.ok(group);
+            AuthGroupDTO groupDTO = authGroupService.getGroupById(groupId);
+            return ResponseEntity.ok(groupDTO);
         } catch (RuntimeException e) {
             return ResponseEntity.notFound().build();
         }
@@ -55,7 +57,7 @@ public class AuthGroupController {
     @PostMapping("/group/post")
     @PreAuthorize("hasRole('ADMIN')")
     public AuthGroup createGroup(@RequestBody AuthGroupDTO authGroupDTO){
-        return authGroupService.createGroup(authGroupDTO.getGroupName());
+        return authGroupService.createGroup(authGroupDTO.getName());
     }
 
     // Add a user to a group
@@ -63,7 +65,7 @@ public class AuthGroupController {
     @PreAuthorize("hasRole('ADMIN')")
     public String addUserToGroup(@RequestBody UserGroupRequestDTO requestDto) {
         try {
-            authGroupService.addUserToGroup(requestDto.getUserId(), requestDto.getGroupName());
+            authGroupService.addUserToGroup(requestDto.getUserId(), requestDto.getGroupName(),requestDto.getPermissionId());
             return "User added to group successfully";
         } catch (DataIntegrityViolationException e) {
             return "User is already in this group.";

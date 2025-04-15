@@ -1,11 +1,14 @@
 package com.RulesTV.RulesTV.services;
 
 import com.RulesTV.RulesTV.entity.AuthGroup;
+import com.RulesTV.RulesTV.entity.AuthPermission;
 import com.RulesTV.RulesTV.entity.AuthUserGroup;
 import com.RulesTV.RulesTV.entity.UserAuth;
 import com.RulesTV.RulesTV.repositories.AuthGroupRepository;
+import com.RulesTV.RulesTV.repositories.AuthPermissionRepository;
 import com.RulesTV.RulesTV.repositories.AuthUserGroupRepository;
 import com.RulesTV.RulesTV.repositories.UserRepository;
+import com.RulesTV.RulesTV.rest.DTO.AuthGroupDTO;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -17,13 +20,15 @@ public class AuthGroupService {
     private final AuthGroupRepository authGroupRepository;
     private final AuthUserGroupRepository authUserGroupRepository;
     private final UserRepository userRepository;
+    private final AuthPermissionRepository authPermissionRepository;
 
     public AuthGroupService(AuthGroupRepository authGroupRepository,
                             AuthUserGroupRepository authUserGroupRepository,
-                            UserRepository userRepository) {
+                            UserRepository userRepository, AuthPermissionRepository authPermissionRepository) {
         this.authGroupRepository = authGroupRepository;
         this.authUserGroupRepository = authUserGroupRepository;
         this.userRepository = userRepository;
+        this.authPermissionRepository = authPermissionRepository;
     }
 
     public List<AuthGroup> getAllGroups() {
@@ -39,37 +44,53 @@ public class AuthGroupService {
         return authGroupRepository.save(group);
     }
 
-    public AuthGroup addUserToGroup(Integer userId, String groupName) {
+    public AuthGroup addUserToGroup(Integer userId, String groupName, Integer permissionId) {
+        // Validate user
         Optional<UserAuth> userOptional = userRepository.findById(userId);
         if (userOptional.isEmpty()) {
             throw new RuntimeException("User not found");
         }
 
+        // Validate group
         Optional<AuthGroup> groupOptional = authGroupRepository.findByName(groupName);
         if (groupOptional.isEmpty()) {
             throw new RuntimeException("Group not found");
         }
 
-        AuthGroup group = groupOptional.get();
+        // Validate permission
+        Optional<AuthPermission> permissionOptional = authPermissionRepository.findById(permissionId);
+        if (permissionOptional.isEmpty()) {
+            throw new RuntimeException("Permission not found");
+        }
 
+        AuthGroup group = groupOptional.get();
+        UserAuth user = userOptional.get();
+        AuthPermission permission = permissionOptional.get();
+
+        // Check group user limit
         if (group.getUserGroups().size() >= 6) {
             throw new RuntimeException("Group has reached its maximum user limit (6)");
         }
 
+        // Check if user is already in group
         boolean alreadyInGroup = group.getUserGroups().stream()
                 .anyMatch(ug -> ug.getUser().getId().equals(userId));
         if (alreadyInGroup) {
             throw new RuntimeException("User is already in this group");
         }
 
+        // Create and save new AuthUserGroup
         AuthUserGroup authUserGroup = new AuthUserGroup();
-        authUserGroup.setUser(userOptional.get());
+        authUserGroup.setUser(user);
         authUserGroup.setGroup(group);
+        authUserGroup.setPermissionId(permission);
 
         authUserGroupRepository.save(authUserGroup);
 
         return group;
     }
+
+
 
 
 
@@ -108,10 +129,12 @@ public class AuthGroupService {
                 .toList();
     }
 
-    //Get a group by its name
-    public AuthGroup getGroupByName(String groupName){
-        return authGroupRepository.findByName(groupName)
+    //Get a group by its id
+    public AuthGroupDTO getGroupById(Integer groupId) {
+        AuthGroup group = authGroupRepository.findById(groupId)
                 .orElseThrow(() -> new RuntimeException("Group not found"));
+
+        return new AuthGroupDTO(group.getId(), group.getName());
     }
 
 
