@@ -61,7 +61,7 @@ public class AuthenticationController {
     public ResponseEntity<LoginResponse> login(@RequestBody Map<String, Object> body, HttpServletRequest request) {
         if (!body.containsKey("email") || !body.containsKey("password") || body.size() != 2) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                    .body(new LoginResponse(0,null,null, 0,null, "Request must contain only 'email' and 'password'.",null));
+                    .body(new LoginResponse(0, null, null, 0, null, "Request must contain only 'email' and 'password'.", null));
         }
 
         String email = (String) body.get("email");
@@ -69,17 +69,20 @@ public class AuthenticationController {
 
         try {
             UserAuth authenticatedUser = authenticationService.authenticate(new LoginUserAuthDTO(email, password));
+
+            // Generate the token with role included
             String jwtToken = jwtService.generateToken(authenticatedUser);
             long expirationTime = jwtService.getExpirationTime();
-            String userRole = authenticatedUser.getRole();
+
+            String userRole = authenticatedUser.getRole().name();
             String userName = authenticatedUser.getFullName();
             Number userId = authenticatedUser.getId();
 
-            // Create and save the authToken
+            // Save the auth token
             AuthToken authToken = new AuthToken(jwtToken, authenticatedUser);
             authTokenService.saveToken(authToken);
 
-            // Create and save the login event
+            // Save login event
             String sessionId = UUID.randomUUID().toString();
             String userAgent = request.getHeader("User-Agent");
             String ipAddress = request.getRemoteAddr();
@@ -91,6 +94,7 @@ public class AuthenticationController {
             logService.saveAuthLogin(authLogin);
 
             return ResponseEntity.ok(new LoginResponse(userId, userName, jwtToken, expirationTime, authenticatedUser.getEmail(), null, userRole));
+
         } catch (Exception ex) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
                     .body(new LoginResponse(0, null, null, 0, null, "Invalid username or password.", null));
@@ -156,45 +160,39 @@ public class AuthenticationController {
         return ResponseEntity.ok(Map.of("message", "Successfully logged out"));
     }
 
-
-
-    @PutMapping("/user/update/{id}")
-    @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<UserAuth> updateUser(@PathVariable Integer id,@RequestBody RegisterUserAuthDTO updateUserDTO){
-        UserAuth updateUser = authenticationService.updateUser(id,updateUserDTO);
-        return ResponseEntity.ok(updateUser);
-    }
-
     @GetMapping("/user/all")
-    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<List<UserAuth>> getAllUsers(){
         List<UserAuth> allUsers = authenticationService.getAllUsers();
         return ResponseEntity.ok(allUsers);
     }
 
     @GetMapping("/user/{email}")
-    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<UserAuth> getUserByEmail(@PathVariable String email) {
         UserAuth user = authenticationService.getUserByEmail(email);
         return ResponseEntity.ok(user);
     }
 
+
+    @PutMapping("/user/update/{id}")
+    public ResponseEntity<UserAuth> updateUser(@PathVariable Integer id,@RequestBody RegisterUserAuthDTO updateUserDTO){
+        UserAuth updateUser = authenticationService.updateUser(id,updateUserDTO);
+        return ResponseEntity.ok(updateUser);
+    }
+
+
     @PostMapping("/user/promote/{email}")
-    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<UserAuth> promoteUserToAdmin(@PathVariable String email) {
         UserAuth user = authenticationService.promoteUserToAdmin(email);
         return ResponseEntity.ok(user);
     }
 
     @PostMapping("/admin/downgrade/{email}")
-    @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<UserAuth> downgradeUserToAdmin(@PathVariable String email) {
-        UserAuth user = authenticationService.downgradeUserToAdmin(email);
+    public ResponseEntity<UserAuth> downgradeAdminToUser(@PathVariable String email) {
+        UserAuth user = authenticationService.downgradeAdminToUser(email);
         return ResponseEntity.ok(user);
     }
 
     @PostMapping("/refresh_token")
-    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<Map<String, String>> refreshToken(@RequestHeader("Authorization") String authHeader) {
         if (authHeader == null || !authHeader.startsWith("Bearer ")) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST)
@@ -225,7 +223,6 @@ public class AuthenticationController {
         }
 
         String userEmail = authentication.getName();
-
         return ResponseEntity.ok(Map.of("email", userEmail));
     }
 
@@ -247,7 +244,6 @@ public class AuthenticationController {
     }
 
     @DeleteMapping("/user/delete/{id}")
-    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<Map<String, String>> deleteUser(@PathVariable Integer id) {
         try {
             authenticationService.deleteUserById(id);
@@ -256,9 +252,6 @@ public class AuthenticationController {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(Map.of("error", e.getMessage()));
         }
     }
-
-
-
 
 
     }

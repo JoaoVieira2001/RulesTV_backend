@@ -16,7 +16,6 @@ public class AuthTokenController {
     }
 
     @GetMapping("/all")
-    @PreAuthorize("hasRole('ADMIN')")
     public List<AuthToken> listAllTokens() {
         return authTokenService.getAllTokens();
     }

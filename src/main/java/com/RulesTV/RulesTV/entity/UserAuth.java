@@ -30,8 +30,9 @@ public class UserAuth implements UserDetails {
     private String password;
 
 
+    @Enumerated(EnumType.STRING)
     @Column(nullable = false)
-    private String role;
+    private Role role;
 
     @CreationTimestamp
     @Column(updatable = false, name = "created_at")
@@ -42,7 +43,7 @@ public class UserAuth implements UserDetails {
     private Date updatedAt;
 
     public enum Role {
-        USER, ADMIN;
+        USER, ADMIN, SUPER_ADMIN;
     }
 
     @ManyToOne
@@ -78,7 +79,7 @@ public class UserAuth implements UserDetails {
         return true;
     }
 
-    public UserAuth(Integer id, String full_name, String phone_number, String email, String role , String password, Date createdAt, Date updatedAt) {
+    public UserAuth(Integer id, String full_name, String phone_number, String email, Role role , String password, Date createdAt, Date updatedAt) {
         this.id = id;
         this.full_name = full_name;
         this.email = email;
@@ -115,11 +116,11 @@ public class UserAuth implements UserDetails {
         this.email = email;
     }
 
-    public String getRole() {
+    public Role getRole() {
         return role;
     }
 
-    public void setRole(String role) {
+    public void setRole(Role role) {
         this.role = role;
     }
 

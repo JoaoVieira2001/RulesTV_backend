@@ -11,7 +11,7 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(AccessDeniedException.class)
     public ResponseEntity<String> handleAccessDenied(AccessDeniedException ex) {
-        return new ResponseEntity<>("You must have 'ADMIN' role to access this resource.", HttpStatus.FORBIDDEN);
+        return new ResponseEntity<>("You must have 'ADMIN' or 'SUPER_ADMIN' role to access this resource.", HttpStatus.FORBIDDEN);
     }
 
     @ExceptionHandler(IllegalCallerException.class)

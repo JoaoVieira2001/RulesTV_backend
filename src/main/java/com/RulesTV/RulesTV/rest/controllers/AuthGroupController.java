@@ -3,6 +3,7 @@ package com.RulesTV.RulesTV.rest.controllers;
 import com.RulesTV.RulesTV.entity.AuthGroup;
 import com.RulesTV.RulesTV.entity.UserAuth;
 import com.RulesTV.RulesTV.rest.DTO.AuthGroupDTO;
+import com.RulesTV.RulesTV.rest.DTO.GroupWithUsersDTO;
 import com.RulesTV.RulesTV.rest.DTO.UserGroupRequestDTO;
 import com.RulesTV.RulesTV.services.AuthGroupService;
 import com.RulesTV.RulesTV.services.AuthenticationService;
@@ -27,23 +28,18 @@ public class AuthGroupController {
 
     // Get all groups
     @GetMapping("/group/all")
-    @PreAuthorize("hasRole('ADMIN')")
-    public List<AuthGroupDTO> listAllGroups() {
-        return authGroupService.getAllGroups().stream()
-                .map(group -> new AuthGroupDTO(group.getId(), group.getName()))
-                .toList();
+    public List<GroupWithUsersDTO> listAllGroupsWithUsers() {
+        return authGroupService.getAllGroupsWithUsers();
     }
 
     // Get all users of a specific group
     @GetMapping("/users/group/{groupName}")
-    @PreAuthorize("hasRole('ADMIN')")
     public List<UserAuth> getUsersByGroup(@PathVariable String groupName){
         return authGroupService.getUsersInGroup(groupName);
     }
 
     // Get a group by its id
     @GetMapping("/group/{groupId}")
-    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<AuthGroupDTO> getGroupById(@PathVariable Integer groupId){
         try {
             AuthGroupDTO groupDTO = authGroupService.getGroupById(groupId);
@@ -55,14 +51,12 @@ public class AuthGroupController {
 
     // Create a new group
     @PostMapping("/group/post")
-    @PreAuthorize("hasRole('ADMIN')")
     public AuthGroup createGroup(@RequestBody AuthGroupDTO authGroupDTO){
         return authGroupService.createGroup(authGroupDTO.getName());
     }
 
     // Add a user to a group
     @PostMapping("/user/group/post")
-    @PreAuthorize("hasRole('ADMIN')")
     public String addUserToGroup(@RequestBody UserGroupRequestDTO requestDto) {
         try {
             authGroupService.addUserToGroup(requestDto.getUserId(), requestDto.getGroupName(),requestDto.getPermissionId());
@@ -74,15 +68,36 @@ public class AuthGroupController {
         }
     }
 
+    // Update group name
+    @PutMapping("/group/{groupId}/put")
+    public ResponseEntity<String> updateGroupName(@PathVariable Integer groupId, @RequestBody AuthGroupDTO updatedGroup) {
+        try {
+            authGroupService.updateGroupName(groupId, updatedGroup.getName());
+            return ResponseEntity.ok("Group name updated successfully.");
+        } catch (RuntimeException e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
+    }
+
     // Remove a user from a group
     @DeleteMapping("/user/{userId}/group/{groupId}/delete")
-    @PreAuthorize("hasRole('ADMIN')")
     public String removeUserFromGroup(@PathVariable Integer userId, @PathVariable Integer groupId) {
         try {
             authGroupService.removeUserFromGroup(userId, groupId);
             return "User removed from group successfully";
         } catch (RuntimeException e) {
             return e.getMessage();
+        }
+    }
+
+    // Delete a group by ID
+    @DeleteMapping("/group/{groupId}/delete")
+    public ResponseEntity<String> deleteGroup(@PathVariable Integer groupId) {
+        try {
+            authGroupService.deleteGroupById(groupId);
+            return ResponseEntity.ok("Group deleted successfully.");
+        } catch (RuntimeException e) {
+            return ResponseEntity.badRequest().body("Failed to delete group: " + e.getMessage());
         }
     }
 }

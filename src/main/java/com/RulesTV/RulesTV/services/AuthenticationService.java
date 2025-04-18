@@ -6,7 +6,6 @@ import org.slf4j.LoggerFactory;
 import com.RulesTV.RulesTV.entity.UserAuth;
 import com.RulesTV.RulesTV.rest.DTO.LoginUserAuthDTO;
 import com.RulesTV.RulesTV.rest.DTO.RegisterUserAuthDTO;
-import org.springframework.cglib.core.Local;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -15,9 +14,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
-
 import java.time.Duration;
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -36,6 +33,7 @@ public class AuthenticationService {
     private final Set<String> blacklistedTokens = new HashSet<>();
     private static final Logger logger = LoggerFactory.getLogger(AuthenticationService.class);
     private final AuthLoginRepository authLoginRepository;
+
 
 
     public AuthenticationService(UserRepository userRepository,
@@ -78,13 +76,7 @@ public class AuthenticationService {
         user.setPhone_number(input.getPhone_number());
         user.setPassword(passwordEncoder.encode(input.getPassword()));
 
-        String role = input.getRole();
-        if ("ADMIN".equalsIgnoreCase(role)) {
-            user.setRole("ADMIN");
-        } else {
-            user.setRole("USER");
-        }
-
+        user.setRole(UserAuth.Role.USER);
         return userRepository.save(user);
     }
 
@@ -101,39 +93,23 @@ public class AuthenticationService {
     }
 
     public List<UserAuth> getAllUsers() {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-
-        if (authentication == null || !authentication.isAuthenticated()) {
-            throw new AccessDeniedException("You must be authenticated to view this resource");
-        }
-
-        if (authentication.getAuthorities().stream()
-                .noneMatch(grantedAuthority -> grantedAuthority.getAuthority().equals("ROLE_ADMIN"))) {
-            throw new AccessDeniedException("You are not authorized to view this resource");
-        }
-
+        AuthUserPermissionService.checkSuperAdminAccess();
         return StreamSupport.stream(userRepository.findAll().spliterator(), false)
                 .collect(Collectors.toList());
     }
 
+
+
+
     public UserAuth getUserByEmail(String email) {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-
-        if (authentication == null || !authentication.isAuthenticated()) {
-            throw new AccessDeniedException("You must be authenticated to view this resource");
-        }
-
-        if (authentication.getAuthorities().stream()
-                .noneMatch(grantedAuthority -> grantedAuthority.getAuthority().equals("ROLE_ADMIN"))) {
-            throw new AccessDeniedException("You are not authorized to view this resource");
-        }
-
+        AuthUserPermissionService.checkAdminOrSuperAdminAccess();
         return userRepository.findByEmail(email)
                 .orElseThrow(() -> new RuntimeException("User not found with email: " + email));
-
     }
 
-    public UserAuth updateUser(Integer id,RegisterUserAuthDTO updateUserDTO){
+
+    public UserAuth updateUser(Integer id, RegisterUserAuthDTO updateUserDTO) {
+        AuthUserPermissionService.checkAdminOrSuperAdminAccess();
         UserAuth user = userRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("User not found with id: " + id));
 
@@ -151,57 +127,33 @@ public class AuthenticationService {
         }
 
         return userRepository.save(user);
-
     }
-
 
     public UserAuth promoteUserToAdmin(String email) {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-
-        if (authentication == null || !authentication.isAuthenticated()) {
-            throw new AccessDeniedException("You must be authenticated to view this resource");
-        }
-
-        if (authentication.getAuthorities().stream()
-                .noneMatch(grantedAuthority -> grantedAuthority.getAuthority().equals("ROLE_ADMIN"))) {
-            throw new AccessDeniedException("You are not authorized to view this resource");
-        }
-
+        AuthUserPermissionService.checkSuperAdminAccess();
         UserAuth user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new RuntimeException("User not found with email: " + email));
 
-        if ("ADMIN".equals(user.getRole())) {
-            throw new RuntimeException("User is already an admin.");
+        if (user.getRole() == UserAuth.Role.ADMIN) {
+            throw new RuntimeException("User is already an ADMIN.");
         }
-
-        user.setRole("ADMIN");
+        user.setRole(UserAuth.Role.ADMIN);
         return userRepository.save(user);
     }
 
 
-    public UserAuth downgradeUserToAdmin(String email) {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-
-        if (authentication == null || !authentication.isAuthenticated()) {
-            throw new AccessDeniedException("You must be authenticated to view this resource");
-        }
-
-        if (authentication.getAuthorities().stream()
-                .noneMatch(grantedAuthority -> grantedAuthority.getAuthority().equals("ROLE_ADMIN"))) {
-            throw new AccessDeniedException("You are not authorized to view this resource");
-        }
-
+    public UserAuth downgradeAdminToUser(String email) {
+        AuthUserPermissionService.checkSuperAdminAccess();
         UserAuth user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new RuntimeException("User not found with email: " + email));
 
-        if ("USER".equals(user.getRole())) {
-            throw new RuntimeException("User is already an user.");
+        if (user.getRole() == UserAuth.Role.USER) {
+            throw new RuntimeException("User is already an USER.");
         }
 
-        user.setRole("USER");
+        user.setRole(UserAuth.Role.USER);
         return userRepository.save(user);
     }
-
 
     public Map<String, String> refreshToken(String oldToken) {
         String userEmail = jwtService.extractUsername(oldToken);
@@ -261,6 +213,7 @@ public class AuthenticationService {
 
     @Transactional
     public boolean deleteUserById(Integer id) {
+        AuthUserPermissionService.checkSuperAdminAccess();
         Optional<UserAuth> userOptional = userRepository.findById(id);
         if (userOptional.isEmpty()) {
             return false;
@@ -275,15 +228,11 @@ public class AuthenticationService {
         authTokenRepository.deleteByUser(user);
 
         userRepository.delete(user);
-
         return true;
     }
 
-
-
     //Store invalidated token
     public void invalidateToken(String token){
-
         blacklistedTokens.add(token);
     }
 
@@ -291,7 +240,6 @@ public class AuthenticationService {
     public boolean isTokenBlackListed(String token){
         return blacklistedTokens.contains(token);
     }
-
 
     public String parseBrowserFromUserAgent(String userAgent){
         if(userAgent == null) return "Unknown";

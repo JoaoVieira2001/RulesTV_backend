@@ -37,6 +37,7 @@ public class CustomAuthenticationProvider implements AuthenticationProvider {
                 .authorities(userAuth.getAuthorities())
                 .build();
 
+
         return new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
     }
 

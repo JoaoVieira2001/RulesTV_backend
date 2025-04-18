@@ -9,6 +9,11 @@ import com.RulesTV.RulesTV.repositories.AuthPermissionRepository;
 import com.RulesTV.RulesTV.repositories.AuthUserGroupRepository;
 import com.RulesTV.RulesTV.repositories.UserRepository;
 import com.RulesTV.RulesTV.rest.DTO.AuthGroupDTO;
+import com.RulesTV.RulesTV.rest.DTO.GroupWithUsersDTO;
+import com.RulesTV.RulesTV.rest.DTO.UserDTO;
+import org.springframework.security.access.AccessDeniedException;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -32,92 +37,28 @@ public class AuthGroupService {
     }
 
     public List<AuthGroup> getAllGroups() {
-        return authGroupRepository.findAll();
+        AuthUserPermissionService.checkAdminOrSuperAdminAccess();
+        return authGroupRepository.findAllWithUsers();
     }
 
-    public AuthGroup createGroup(String groupName) {
-        if (authGroupRepository.findByName(groupName).isPresent()) {
-            throw new IllegalArgumentException("Group with this name already exists");
-        }
-        AuthGroup group = new AuthGroup();
-        group.setName(groupName);
-        return authGroupRepository.save(group);
-    }
+    public List<GroupWithUsersDTO> getAllGroupsWithUsers() {
+        AuthUserPermissionService.checkAdminOrSuperAdminAccess();
+        List<AuthGroup> groups = authGroupRepository.findAllWithUsers();
 
-    public AuthGroup addUserToGroup(Integer userId, String groupName, Integer permissionId) {
-        // Validate user
-        Optional<UserAuth> userOptional = userRepository.findById(userId);
-        if (userOptional.isEmpty()) {
-            throw new RuntimeException("User not found");
-        }
+        return groups.stream().map(group -> {
+            List<UserDTO> users = group.getUserGroups().stream()
+                    .map(ug -> {
+                        UserAuth user = ug.getUser();
+                        return new UserDTO(user.getId(), user.getUsername());
+                    }).toList();
 
-        // Validate group
-        Optional<AuthGroup> groupOptional = authGroupRepository.findByName(groupName);
-        if (groupOptional.isEmpty()) {
-            throw new RuntimeException("Group not found");
-        }
-
-        // Validate permission
-        Optional<AuthPermission> permissionOptional = authPermissionRepository.findById(permissionId);
-        if (permissionOptional.isEmpty()) {
-            throw new RuntimeException("Permission not found");
-        }
-
-        AuthGroup group = groupOptional.get();
-        UserAuth user = userOptional.get();
-        AuthPermission permission = permissionOptional.get();
-
-        // Check group user limit
-        if (group.getUserGroups().size() >= 6) {
-            throw new RuntimeException("Group has reached its maximum user limit (6)");
-        }
-
-        // Check if user is already in group
-        boolean alreadyInGroup = group.getUserGroups().stream()
-                .anyMatch(ug -> ug.getUser().getId().equals(userId));
-        if (alreadyInGroup) {
-            throw new RuntimeException("User is already in this group");
-        }
-
-        // Create and save new AuthUserGroup
-        AuthUserGroup authUserGroup = new AuthUserGroup();
-        authUserGroup.setUser(user);
-        authUserGroup.setGroup(group);
-        authUserGroup.setPermissionId(permission);
-
-        authUserGroupRepository.save(authUserGroup);
-
-        return group;
-    }
-
-
-
-
-
-    public void removeUserFromGroup(Integer userId, Integer groupId){
-       Optional<UserAuth> userOptional = userRepository.findById(userId);
-       if (userOptional.isEmpty()) {
-           throw new RuntimeException("User not found");
-       }
-
-       Optional<AuthGroup> groupOptional = authGroupRepository.findById(groupId);
-       if (groupOptional.isEmpty()) {
-           throw new RuntimeException("Group not found");
-       }
-
-       UserAuth user = userOptional.get();
-       AuthGroup group = groupOptional.get();
-
-       Optional<AuthUserGroup> userGroupOptional = authUserGroupRepository.findByUserAndGroup(user,group);
-       if (userGroupOptional.isEmpty()) {
-           throw new RuntimeException("User is not part of this group");
-       }
-
-       authUserGroupRepository.delete(userGroupOptional.get());
+            return new GroupWithUsersDTO(group.getId(), group.getName(), users);
+        }).toList();
     }
 
     // Get all users of a specific group
     public List<UserAuth> getUsersInGroup(String groupName){
+        AuthUserPermissionService.checkAdminOrSuperAdminAccess();
         Optional<AuthGroup> groupOptional = authGroupRepository.findByName(groupName);
         if (groupOptional.isEmpty()) {
             throw new RuntimeException("Group not found");
@@ -131,6 +72,8 @@ public class AuthGroupService {
 
     //Get a group by its id
     public AuthGroupDTO getGroupById(Integer groupId) {
+        AuthUserPermissionService.checkAdminOrSuperAdminAccess();
+
         AuthGroup group = authGroupRepository.findById(groupId)
                 .orElseThrow(() -> new RuntimeException("Group not found"));
 
@@ -138,4 +81,101 @@ public class AuthGroupService {
     }
 
 
+    public AuthGroup createGroup(String groupName) {
+        AuthUserPermissionService.checkSuperAdminAccess();
+        if (authGroupRepository.findByName(groupName).isPresent()) {
+            throw new IllegalArgumentException("Group with this name already exists");
+        }
+        AuthGroup group = new AuthGroup();
+        group.setName(groupName);
+        return authGroupRepository.save(group);
+    }
+
+    public AuthGroup addUserToGroup(Integer userId, String groupName, Integer permissionId) {
+        AuthUserPermissionService.checkAdminOrSuperAdminAccess();
+
+        Optional<UserAuth> userOptional = userRepository.findById(userId);
+        if (userOptional.isEmpty()) {
+            throw new RuntimeException("User not found");
+        }
+
+        Optional<AuthGroup> groupOptional = authGroupRepository.findByName(groupName);
+        if (groupOptional.isEmpty()) {
+            throw new RuntimeException("Group not found");
+        }
+
+        Optional<AuthPermission> permissionOptional = authPermissionRepository.findById(permissionId);
+        if (permissionOptional.isEmpty()) {
+            throw new RuntimeException("Permission not found");
+        }
+
+        AuthGroup group = groupOptional.get();
+        UserAuth user = userOptional.get();
+        AuthPermission permission = permissionOptional.get();
+
+        if (group.getUserGroups().size() >= 6) {
+            throw new RuntimeException("Group has reached its maximum user limit (6)");
+        }
+
+        boolean alreadyInGroup = group.getUserGroups().stream()
+                .anyMatch(ug -> ug.getUser().getId().equals(userId));
+        if (alreadyInGroup) {
+            throw new RuntimeException("User is already in this group");
+        }
+
+        AuthUserGroup authUserGroup = new AuthUserGroup();
+        authUserGroup.setUser(user);
+        authUserGroup.setGroup(group);
+        authUserGroup.setPermissionId(permission);
+
+        authUserGroupRepository.save(authUserGroup);
+
+        return group;
+    }
+
+    public void updateGroupName(Integer groupId, String newName) {
+        AuthUserPermissionService.checkAdminOrSuperAdminAccess();
+
+        AuthGroup group = authGroupRepository.findById(groupId)
+                .orElseThrow(() -> new RuntimeException("Group not found with ID: " + groupId));
+
+        if (authGroupRepository.existsByName(newName)) {
+            throw new RuntimeException("Group name already exists.");
+        }
+
+        group.setName(newName);
+        authGroupRepository.save(group);
+    }
+
+    public void removeUserFromGroup(Integer userId, Integer groupId) {
+        AuthUserPermissionService.checkAdminOrSuperAdminAccess();
+
+        Optional<UserAuth> userOptional = userRepository.findById(userId);
+        if (userOptional.isEmpty()) {
+            throw new RuntimeException("User not found");
+        }
+
+        Optional<AuthGroup> groupOptional = authGroupRepository.findById(groupId);
+        if (groupOptional.isEmpty()) {
+            throw new RuntimeException("Group not found");
+        }
+
+        UserAuth user = userOptional.get();
+        AuthGroup group = groupOptional.get();
+
+        Optional<AuthUserGroup> userGroupOptional = authUserGroupRepository.findByUserAndGroup(user, group);
+        if (userGroupOptional.isEmpty()) {
+            throw new RuntimeException("User is not part of this group");
+        }
+
+        authUserGroupRepository.delete(userGroupOptional.get());
+    }
+
+    public void deleteGroupById(Integer groupId) {
+        AuthUserPermissionService.checkSuperAdminAccess();
+
+        AuthGroup group = authGroupRepository.findById(groupId)
+                .orElseThrow(() -> new RuntimeException("Group not found"));
+        authGroupRepository.delete(group);
+    }
 }
