@@ -3,12 +3,10 @@ package com.RulesTV.RulesTV.rest.controllers;
 import com.RulesTV.RulesTV.entity.AuthGroup;
 import com.RulesTV.RulesTV.entity.UserAuth;
 import com.RulesTV.RulesTV.rest.DTO.AuthGroupDTO;
-import com.RulesTV.RulesTV.rest.DTO.GroupWithUsersDTO;
 import com.RulesTV.RulesTV.rest.DTO.UserGroupRequestDTO;
 import com.RulesTV.RulesTV.services.AuthGroupService;
 import com.RulesTV.RulesTV.services.AuthenticationService;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.dao.DataIntegrityViolationException;
 import java.util.List;
@@ -28,8 +26,8 @@ public class AuthGroupController {
 
     // Get all groups
     @GetMapping("/group/all")
-    public List<GroupWithUsersDTO> listAllGroupsWithUsers() {
-        return authGroupService.getAllGroupsWithUsers();
+    public List<AuthGroupDTO> getAllGroups() {
+        return authGroupService.getAllGroups();
     }
 
     // Get all users of a specific group

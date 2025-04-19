@@ -9,11 +9,7 @@ import com.RulesTV.RulesTV.repositories.AuthPermissionRepository;
 import com.RulesTV.RulesTV.repositories.AuthUserGroupRepository;
 import com.RulesTV.RulesTV.repositories.UserRepository;
 import com.RulesTV.RulesTV.rest.DTO.AuthGroupDTO;
-import com.RulesTV.RulesTV.rest.DTO.GroupWithUsersDTO;
 import com.RulesTV.RulesTV.rest.DTO.UserDTO;
-import org.springframework.security.access.AccessDeniedException;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -36,13 +32,10 @@ public class AuthGroupService {
         this.authPermissionRepository = authPermissionRepository;
     }
 
-    public List<AuthGroup> getAllGroups() {
+    // Get all groups with the associated users
+    public List<AuthGroupDTO> getAllGroups() {
         AuthUserPermissionService.checkAdminOrSuperAdminAccess();
-        return authGroupRepository.findAllWithUsers();
-    }
 
-    public List<GroupWithUsersDTO> getAllGroupsWithUsers() {
-        AuthUserPermissionService.checkAdminOrSuperAdminAccess();
         List<AuthGroup> groups = authGroupRepository.findAllWithUsers();
 
         return groups.stream().map(group -> {
@@ -50,9 +43,10 @@ public class AuthGroupService {
                     .map(ug -> {
                         UserAuth user = ug.getUser();
                         return new UserDTO(user.getId(), user.getUsername());
-                    }).toList();
+                    })
+                    .toList();
 
-            return new GroupWithUsersDTO(group.getId(), group.getName(), users);
+            return new AuthGroupDTO(group.getId(), group.getName(), users);
         }).toList();
     }
 
@@ -77,9 +71,15 @@ public class AuthGroupService {
         AuthGroup group = authGroupRepository.findById(groupId)
                 .orElseThrow(() -> new RuntimeException("Group not found"));
 
-        return new AuthGroupDTO(group.getId(), group.getName());
-    }
+        List<UserDTO> users = group.getUserGroups().stream()
+                .map(ug -> {
+                    UserAuth user = ug.getUser();
+                    return new UserDTO(user.getId(), user.getUsername());
+                })
+                .toList();
 
+        return new AuthGroupDTO(group.getId(), group.getName(), users);
+    }
 
     public AuthGroup createGroup(String groupName) {
         AuthUserPermissionService.checkSuperAdminAccess();
