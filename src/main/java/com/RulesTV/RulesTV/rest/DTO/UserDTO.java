@@ -2,11 +2,11 @@ package com.RulesTV.RulesTV.rest.DTO;
 
 public class UserDTO {
     private Integer id;
-    private String username;
+    private String fullName;
 
-    public UserDTO(Integer id, String username) {
+    public UserDTO(Integer id, String fullName) {
         this.id = id;
-        this.username = username;
+        this.fullName = fullName;
     }
 
     public Integer getId() {
@@ -17,11 +17,11 @@ public class UserDTO {
         this.id = id;
     }
 
-    public String getUsername() {
-        return username;
+    public String getFullName() {
+        return fullName;
     }
 
-    public void setUsername(String username) {
-        this.username = username;
+    public void setFullName(String fullName) {
+        this.fullName = fullName;
     }
 }

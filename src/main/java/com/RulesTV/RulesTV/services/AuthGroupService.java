@@ -1,7 +1,6 @@
 package com.RulesTV.RulesTV.services;
 
 import com.RulesTV.RulesTV.entity.AuthGroup;
-import com.RulesTV.RulesTV.entity.AuthPermission;
 import com.RulesTV.RulesTV.entity.AuthUserGroup;
 import com.RulesTV.RulesTV.entity.UserAuth;
 import com.RulesTV.RulesTV.repositories.AuthGroupRepository;
@@ -42,7 +41,7 @@ public class AuthGroupService {
             List<UserDTO> users = group.getUserGroups().stream()
                     .map(ug -> {
                         UserAuth user = ug.getUser();
-                        return new UserDTO(user.getId(), user.getUsername());
+                        return new UserDTO(user.getId(), user.getFullName());
                     })
                     .toList();
 
@@ -91,7 +90,7 @@ public class AuthGroupService {
         return authGroupRepository.save(group);
     }
 
-    public AuthGroup addUserToGroup(Integer userId, String groupName, Integer permissionId) {
+    public AuthGroup addUserToGroup(Integer userId, String groupName) {
         AuthUserPermissionService.checkAdminOrSuperAdminAccess();
 
         Optional<UserAuth> userOptional = userRepository.findById(userId);
@@ -104,14 +103,8 @@ public class AuthGroupService {
             throw new RuntimeException("Group not found");
         }
 
-        Optional<AuthPermission> permissionOptional = authPermissionRepository.findById(permissionId);
-        if (permissionOptional.isEmpty()) {
-            throw new RuntimeException("Permission not found");
-        }
-
         AuthGroup group = groupOptional.get();
         UserAuth user = userOptional.get();
-        AuthPermission permission = permissionOptional.get();
 
         if (group.getUserGroups().size() >= 6) {
             throw new RuntimeException("Group has reached its maximum user limit (6)");
@@ -119,6 +112,7 @@ public class AuthGroupService {
 
         boolean alreadyInGroup = group.getUserGroups().stream()
                 .anyMatch(ug -> ug.getUser().getId().equals(userId));
+
         if (alreadyInGroup) {
             throw new RuntimeException("User is already in this group");
         }
@@ -126,12 +120,14 @@ public class AuthGroupService {
         AuthUserGroup authUserGroup = new AuthUserGroup();
         authUserGroup.setUser(user);
         authUserGroup.setGroup(group);
-        authUserGroup.setPermissionId(permission);
 
         authUserGroupRepository.save(authUserGroup);
 
+        group.getUserGroups().add(authUserGroup);
+
         return group;
     }
+
 
     public void updateGroupName(Integer groupId, String newName) {
         AuthUserPermissionService.checkAdminOrSuperAdminAccess();

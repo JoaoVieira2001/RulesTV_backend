@@ -2,10 +2,7 @@ package com.RulesTV.RulesTV.entity;
 import jakarta.persistence.*;
 
 @Entity
-@Table(
-        name = "auth_user_groups",
-        uniqueConstraints = {@UniqueConstraint(columnNames = {"user_id", "group_id"})}
-)
+@Table(name = "auth_user_permission")
 public class AuthUserPermission {
 
     @Id

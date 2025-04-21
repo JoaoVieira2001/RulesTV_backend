@@ -12,13 +12,10 @@ import java.util.Optional;
 @Repository
 public interface AuthUserGroupRepository extends JpaRepository<AuthUserGroup, Integer> {
 
-    // Check if a user is already associated with a group
     boolean existsByUserAndGroup(UserAuth user, AuthGroup group);
 
-    // Get the AuthUserGroup for a user and group
     Optional<AuthUserGroup> findByUserAndGroup(UserAuth user,AuthGroup group);
 
-    // Find all user-group associations for a specific group
     List<AuthUserGroup> findByGroup(AuthGroup group);
 
     AuthGroup group(AuthGroup group);

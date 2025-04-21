@@ -6,10 +6,14 @@ import com.RulesTV.RulesTV.rest.DTO.AuthGroupDTO;
 import com.RulesTV.RulesTV.rest.DTO.UserGroupRequestDTO;
 import com.RulesTV.RulesTV.services.AuthGroupService;
 import com.RulesTV.RulesTV.services.AuthenticationService;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.dao.DataIntegrityViolationException;
+
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/auth")
@@ -55,25 +59,29 @@ public class AuthGroupController {
 
     // Add a user to a group
     @PostMapping("/user/group/post")
-    public String addUserToGroup(@RequestBody UserGroupRequestDTO requestDto) {
+    public ResponseEntity<String> addUserToGroup(@RequestBody UserGroupRequestDTO requestDto) {
         try {
-            authGroupService.addUserToGroup(requestDto.getUserId(), requestDto.getGroupName(),requestDto.getPermissionId());
-            return "User added to group successfully";
-        } catch (DataIntegrityViolationException e) {
-            return "User is already in this group.";
+            authGroupService.addUserToGroup(requestDto.getUserId(), requestDto.getGroupName());
+            return ResponseEntity.ok("User added to group successfully");
         } catch (RuntimeException e) {
-            return e.getMessage();
+            if ("User is already in this group".equals(e.getMessage())) {
+                return ResponseEntity.status(HttpStatus.CONFLICT).body(e.getMessage()); // 409
+            }
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage()); // 400
         }
     }
 
     // Update group name
     @PutMapping("/group/{groupId}/put")
-    public ResponseEntity<String> updateGroupName(@PathVariable Integer groupId, @RequestBody AuthGroupDTO updatedGroup) {
+    public ResponseEntity<Map<String, String>> updateGroupName(@PathVariable Integer groupId, @RequestBody AuthGroupDTO updatedGroup) {
+        Map<String, String> response = new HashMap<>();
         try {
             authGroupService.updateGroupName(groupId, updatedGroup.getName());
-            return ResponseEntity.ok("Group name updated successfully.");
+            response.put("message", "Group name updated successfully.");
+            return ResponseEntity.ok(response);
         } catch (RuntimeException e) {
-            return ResponseEntity.badRequest().body(e.getMessage());
+            response.put("error", e.getMessage());
+            return ResponseEntity.badRequest().body(response);
         }
     }
 
