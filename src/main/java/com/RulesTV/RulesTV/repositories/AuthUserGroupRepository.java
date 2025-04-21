@@ -20,7 +20,11 @@ public interface AuthUserGroupRepository extends JpaRepository<AuthUserGroup, In
 
     AuthGroup group(AuthGroup group);
 
+    void deleteByUserAndGroup(UserAuth user, AuthGroup group);
+
     void deleteByUser(UserAuth user);
+
+    void deleteByGroup(AuthGroup group);
 
     List<AuthUserGroup> findByUser(UserAuth user);
 

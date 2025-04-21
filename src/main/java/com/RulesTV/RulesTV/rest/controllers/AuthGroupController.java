@@ -9,7 +9,6 @@ import com.RulesTV.RulesTV.services.AuthenticationService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.dao.DataIntegrityViolationException;
 
 import java.util.HashMap;
 import java.util.List;
@@ -84,6 +83,19 @@ public class AuthGroupController {
             return ResponseEntity.badRequest().body(response);
         }
     }
+
+    // Update user(s) of a group
+    @PutMapping("/group/{groupName}/users/put")
+    public ResponseEntity<String> updateGroupUsers(@PathVariable String groupName, @RequestBody UserGroupRequestDTO request) {
+        try {
+            authGroupService.updateUsersOfGroup(groupName, request.getUserId(), request.getUserIds());
+            return ResponseEntity.ok("Group users updated successfully.");
+        } catch (RuntimeException e) {
+            return ResponseEntity.badRequest().body("Failed to update group users: " + e.getMessage());
+        }
+    }
+
+
 
     // Remove a user from a group
     @DeleteMapping("/user/{userId}/group/{groupId}/delete")

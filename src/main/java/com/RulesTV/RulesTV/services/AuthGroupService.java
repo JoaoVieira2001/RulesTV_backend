@@ -9,8 +9,8 @@ import com.RulesTV.RulesTV.repositories.AuthUserGroupRepository;
 import com.RulesTV.RulesTV.repositories.UserRepository;
 import com.RulesTV.RulesTV.rest.DTO.AuthGroupDTO;
 import com.RulesTV.RulesTV.rest.DTO.UserDTO;
+import jakarta.transaction.Transactional;
 import org.springframework.stereotype.Service;
-
 import java.util.List;
 import java.util.Optional;
 
@@ -127,6 +127,32 @@ public class AuthGroupService {
 
         return group;
     }
+
+    @Transactional
+    public void updateUsersOfGroup(String groupName, Integer newUserId, List<Integer> oldUserIdsToRemove) {
+        AuthGroup group = authGroupRepository.findByName(groupName)
+                .orElseThrow(() -> new RuntimeException("Group not found with name: " + groupName));
+
+        for (Integer userIdToRemove : oldUserIdsToRemove) {
+            UserAuth userToRemove = userRepository.findById(userIdToRemove)
+                    .orElseThrow(() -> new RuntimeException("User to remove not found: " + userIdToRemove));
+            authUserGroupRepository.deleteByUserAndGroup(userToRemove, group);
+        }
+
+        UserAuth newUser = userRepository.findById(newUserId)
+                .orElseThrow(() -> new RuntimeException("New user to replace not found: " + newUserId));
+
+        boolean isAlreadyInGroup = authUserGroupRepository.existsByUserAndGroup(newUser, group);
+
+        if (!isAlreadyInGroup) {
+            AuthUserGroup newAssociation = new AuthUserGroup();
+            newAssociation.setGroup(group);
+            newAssociation.setUser(newUser);
+            authUserGroupRepository.save(newAssociation);
+        }
+    }
+
+
 
 
     public void updateGroupName(Integer groupId, String newName) {
